@@ -1,0 +1,44 @@
+{
+    "id": 373074,
+    "task_params": {
+        "rules": [
+            "Generic.Commenting.DocComment.Empty",
+            "Generic.Files.LineLength.TooLong",
+            "PEAR.Commenting.FileComment.AuthorTagOrder",
+            "Squiz.Functions.FunctionDeclarationArgumentSpacing",
+            "Security.BadFunctions.Backticks.WarnSystemExec"
+        ],
+        "rule_list": [
+            {
+                "category": 8,
+                "gid": 4388,
+                "severity": 2,
+                "tool_name": "phpcs",
+                "name": "shorten-64-to-32"
+            },
+            {
+                "category": 8,
+                "gid": 4390,
+                "severity": 2,
+                "tool_name": "phpcs",
+                "name": "objc-method-access"
+            }
+        ],
+        "path_filters": {
+            "exclusion": [],
+            "inclusion": [],
+            "re_exclusion": [".*/PHPMailer.*"]
+        },
+        "envs": {},
+        "pre_cmd": "",
+        "build_cmd": "",
+        "incr_scan": false
+    },
+    "task_name": "phpcs",
+    "create_time": "2019-08-19T15:46:41+08:00",
+    "execute_processes": [
+        "compile",
+        "datahandle"
+    ],
+    "task_dir": "/src/codedog/data/taskdirs/task_3"
+}
