@@ -117,6 +117,9 @@ class PhpCs(object):
         # 查看path环境变量
         print("[debug] path: %s" % os.environ.get("PATH"))
 
+        stdout_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "stdout_file.txt")
+        fs = open(stdout_path, "w")
+
         # ------------------------------------------------------------------ #
         # 增量扫描时,可以通过环境变量获取到diff文件列表,只扫描diff文件,减少耗时
         # 此处获取到的diff文件列表,已经根据项目配置的过滤路径过滤
@@ -161,7 +164,8 @@ class PhpCs(object):
             tool_bin,
             "--standard=%s" % rule_config_file,
             "--extensions=%s" % ','.join(want_suffix).replace('.', ''),
-            "--report-json=%s" % error_output
+            "--report-json=%s" % error_output,
+            "-v"
         ]
 
         # 正则过滤路径
@@ -177,7 +181,12 @@ class PhpCs(object):
 
         scan_cmd = " ".join(cmd)
         print("[debug] cmd: %s" % scan_cmd)
-        subprocess.call(cmd, stdout=subprocess.DEVNULL)
+        # subprocess.call(cmd, stdout=subprocess.DEVNULL)
+        subproc = subprocess.Popen(scan_cmd, 
+                                    stdout=fs,
+                                    shell=True)
+        subproc.wait()
+        # out, err = subproc.communicate()
 
         # 数据处理
         try:
