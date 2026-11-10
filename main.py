@@ -11,8 +11,6 @@ phpcs 工具
 4. 命令行cd到项目根目录,执行命令:  python3 src/main.py
 """
 
-# 2020-12-24    kylinye    created
-
 import os
 import json
 import subprocess
@@ -28,7 +26,6 @@ class PhpCs(object):
         :return:
         """
         task_request_file = os.environ.get("TASK_REQUEST")
-        # task_request_file = "task_request.json"
         with open(task_request_file, 'r') as rf:
             task_request = json.load(rf)
         task_params = task_request["task_params"]
@@ -55,7 +52,7 @@ class PhpCs(object):
 
     def config(self, rules):
         current_path = os.getcwd()
-        rule_config_file = os.path.join(current_path, "config.xml")
+        rule_config_file = os.path.join(current_path, "phpcs_config.xml")
         if os.path.exists(rule_config_file):
             os.remove(rule_config_file)
         
@@ -99,7 +96,6 @@ class PhpCs(object):
         """
         # 代码目录直接从环境变量获取
         source_dir = os.environ.get("SOURCE_DIR", None)
-        # source_dir = "/Users/kylinye/Documents/UGit/example/Php_example/"
         print("[debug] source_dir: %s" % source_dir)
 
         # 其他参数从task_request.json文件获取
@@ -143,24 +139,28 @@ class PhpCs(object):
         result=[]
 
         # 三端环境
+        # php 二进制统一放在 php_bin 目录下, 按平台区分
+        php_bin_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "php_bin")
         if sys.platform in ("darwin",):
-            # 是否安装了PHP环境
-            print("[debug] 查看php version")
-            subProCPhp = subprocess.Popen(["php", "--version"])
-            subProCPhp.wait()
-            if subProCPhp.returncode != 0:
-                print("[error] 机器没有安装php环境，请切换至Linux或Windows")
-                return
+            # macOS 使用系统自带 php (仓库未内置 mac 二进制)
             cmd = ["php"]
         elif sys.platform in ("linux", "linux2"):
-            cmd = ["./php"]
+            # 内置 linux php 放在 php_bin/linux, 且其依赖 libxml2.so, 需通过
+            # LD_LIBRARY_PATH 指向同目录, 否则运行时找不到 libxml2.so.2
+            php_exe = os.path.join(php_bin_dir, "linux", "php")
+            cmd = [php_exe]
+            os.environ["LD_LIBRARY_PATH"] = os.path.join(php_bin_dir, "linux") + \
+                os.pathsep + os.environ.get("LD_LIBRARY_PATH", "")
         elif sys.platform in ("win32"):
-            cmd = ["php.exe"]
+            # 内置 windows php 放在 php_bin/windows, Windows 下 php.exe 会基于
+            # 自身所在目录自动加载同目录的 php8.dll 等依赖, 无需额外设置
+            php_exe = os.path.join(php_bin_dir, "windows", "php.exe")
+            cmd = [php_exe]
 
-        tool_bin = "PHP_CodeSniffer-3.6.0/bin/phpcs"
-        cmd = cmd + [ 
+        tool_bin = "PHP_CodeSniffer-3.7.2/bin/phpcs"
+        cmd = cmd + [
             "-d",
-            "memory_limit=\"-1\"",
+            "memory_limit=-1",
             tool_bin,
             "--standard=%s" % rule_config_file,
             "--extensions=%s" % ','.join(want_suffix).replace('.', ''),
